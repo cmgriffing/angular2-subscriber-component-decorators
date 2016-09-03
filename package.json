@@ -1,0 +1,19 @@
+{
+  "name": "angular2-subscriber-component-decorators",
+  "version": "0.0.1",
+  "description": "A set of Decorators to reduce the boilerplate of unsubscribing from subscriptions in smart components.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "cmgriffing",
+  "license": "MIT",
+  "dependencies": {
+    "rxjs": "^5.0.0-beta.11"
+  },
+  "devDependencies": {
+    "ts-node": "0.5.5",
+    "tslint": "3.11.0",
+    "typescript": "1.8.10",
+  }
+}
