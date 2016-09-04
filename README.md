@@ -22,7 +22,8 @@ A class method property decorator that triggers the unsubscribe logic on the dec
 
 ## Example
 
-```
+```typescript
+
 import { Component, OnInit } from '@angular/core';
 import { SessionService } from '../session-service/session.service';
 import { Subscriber, Unsubscribe, MethodSubscription, PropertySubscription } from 'angular2-subscriber-component-decorators';
@@ -50,14 +51,15 @@ export class SessionsPageComponent implements OnInit {
   constructor(private sessionService: SessionService) { }
 
   ngOnInit() {
-    // An example of manually adding a subscription to the list to be unsubscribed later. Notice that we have to use the array syntax since the linter is unable to traverse the decorators far enough to see the subs property.
-    // this['subs'].push(
-    //   this.sessionService.getSessions()
-    //     .subscribe(
-    //       (sessions) => { this.sessions = sessions; console.log('Sessions: ', sessions); },
-    //       (error) => { console.error(<any>error); }
-    //     )
-    // );
+    // An example of manually adding a subscription to the list to be unsubscribed later.
+    // Notice that we have to use the array syntax since the subs property is not seen by the compiler.
+    this['subs'].push(
+      this.sessionService.getSessions()
+        .subscribe(
+          (sessions) => { this.sessions = sessions; console.log('Sessions: ', sessions); },
+          (error) => { console.error(<any>error); }
+        )
+    );
   }
 
   ngOnDestroy() {
