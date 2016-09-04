@@ -19,17 +19,30 @@ export function Subscriber(params) {
     target.prototype.subs = [];
     setupSubscriberMethods(target);
 
-    // update ngOnInit to actually fire our method subscribers
-    const originalInit = target.prototype.ngOnInit;
-    target.prototype.ngOnInit = function() {
+    let initMethodKey = 'ngOnInit';
+    if(target.prototype.subscriptionsInitKey) {
+      initMethodKey = target.prototype.subscriptionsInitKey;
+    }
+    if(!target.prototype[initMethodKey]) {
+      throw new Error('You must either implement OnInit or you must use the @InitSubscriptions decorator on a class method.');
+    }
+    const originalInit = target.prototype[initMethodKey];
+    target.prototype[initMethodKey] = function() {
       target.prototype.subscriberMethods.map((method) => {
         method.apply(this);
       })
       originalInit.apply(this);
     };
 
-    const originalOnDestroy = target.prototype.ngOnDestroy;
-    target.prototype.ngOnDestroy = function() {
+    let destroyMethodKey = 'ngOnInit';
+    if(target.prototype.subscriptionsDestroyKey) {
+      destroyMethodKey = target.prototype.subscriptionsDestroyKey;
+    }
+    if(!target.prototype[destroyMethodKey]) {
+      throw new Error('You must either implement OnInit or you must use the @DestroySubscriptions decorator on a class method.');
+    }
+    const originalOnDestroy = target.prototype[destroyMethodKey];
+    target.prototype[destroyMethodKey] = function() {
       this.subs.map(function(sub) {
         console.log('unsubscribing');
         sub.unsubscribe();
@@ -108,19 +121,14 @@ export function MethodSubscription(params) {
   };
 }
 
-// Used to unsubscribe all subs in a method other than ngOnDestroy. 
-// Not sure if needed, left over from initial implementation before a refactor.
-export function Unsubscribe(target: any, key: string, descriptor: any) {
-
-  const originalValue = descriptor.value;
-
-  descriptor.value = function (...args: any[]) {
-    this.subs.map(function(sub) {
-      sub.unsubscribe();
-    });
-    originalValue.apply(this, args);
-  };
-
+// Used to subscribe all pending subs in a method other than ngOnInit.
+export function InitSubscriptions(target: any, key: string, descriptor: any) {
+  target.prototype.initMethodKey = key;
   return descriptor;
+}
 
+// Used to unsubscribe all subs in a method other than ngOnDestroy. 
+export function DestroySubscriptions(target: any, key: string, descriptor: any) {
+  target.prototype.destroyMethodKey = key;
+  return descriptor;
 }

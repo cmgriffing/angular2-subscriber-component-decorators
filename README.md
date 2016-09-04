@@ -17,16 +17,19 @@ A class method decorator that adds a subscription or array of subscriptions to t
 ### @PropertySubscription
 A class property decorator. To be used seldomly since it starts the subscription when the component is instantiated instead of ngOnInit. This is not ideal, but possibly useful. The subscription still gets unsubscribed in ngOnDestroy properly.
 
-### @Unsubscribe
-A class method property decorator that triggers the unsubscribe logic on the decorated method. Note: Currently, the ngOnDestroy hook will do the unsubscribe logic regardless of there being a method decorated with @Unsubscribe. This could change in a future version.
+### @InitSubscriptions
+A class method property decorator that triggers the subscribe logic for decorated subscriptions on the decorated method. You must use this if your class does not implement `OnInit`.
 
-## Example
+### @DestroySubscriptions
+A class method property decorator that triggers the unsubscribe logic on the decorated method. You must use this if your class does not implement `OnInit`.
+
+## Basic Example with OnInit
 
 ```typescript
 
 import { Component, OnInit } from '@angular/core';
 import { SessionService } from '../session-service/session.service';
-import { Subscriber, Unsubscribe, MethodSubscription, PropertySubscription } from 'angular2-subscriber-component-decorators';
+import { Subscriber, Unsubscribe, MethodSubscription } from 'angular2-subscriber-component-decorators';
 
 @Subscriber({})
 @Component({
@@ -63,6 +66,51 @@ export class SessionsPageComponent implements OnInit {
   }
 
   ngOnDestroy() {
+  }
+
+}
+
+
+```
+
+## Basic Example Without OnInit
+
+```typescript
+
+import { Component } from '@angular/core';
+import { SessionService } from '../session-service/session.service';
+import { Subscriber, MethodSubscription, InitSubscriptions, DestroySubscriptions } from 'angular2-subscriber-component-decorators';
+
+@Subscriber({})
+@Component({
+  moduleId: module.id,
+  selector: 'app-sessions-page',
+  templateUrl: 'sessions-page.component.html',
+  styleUrls: ['sessions-page.component.css'],
+  providers: [SessionService]
+})
+export class SessionsPageComponent {
+
+  sessions: Session[] = [];
+
+  @MethodSubscription({})
+  sessionSubscription() {
+    return this.sessionService.getSessions().subscribe(
+      (sessions) => { this.sessions = sessions; console.log('Sessions: ', sessions); },
+      (error) => { console.error(<any>error); }
+    );
+  }
+
+  constructor(private sessionService: SessionService) { }
+
+  @InitSubscriptions
+  customInit() {
+    // ...
+  }
+
+  @DestroySubscriptions
+  customDestroy() {
+    // ...
   }
 
 }
